@@ -123,8 +123,8 @@ If issues were found, mention them: "I found duplicate Prettier hooks. I'll clea
 | `{{LIFECYCLE_SKIP_CLAUSE}}` | strict: remove "Skip steps" / guidelines: keep as-is / loose: "No enforced workflow. Use your judgment." |
 | `{{LIFECYCLE_GATE}}` | strict: "Every step requires completion." / guidelines: "Step 1 needs approval, 2-4 run autonomously." / loose: remove |
 | `{{WORKING_DOCS_LIFECYCLE}}` | ephemeral: "Delete all after task." / persistent: "Keep indefinitely." / selective: keep the full block |
-| `{{AGENT_TABLE}}` | Adjust Auto/Confirm per AGENT_FLOW. Note ECC if detected. |
-| `{{HOOKS_SUMMARY}}` | List hooks per LANGUAGES. Note source (ECC vs settings.json). |
+| `{{POST_WORK_BEHAVIORS}}` | Adjust which behaviors are Auto vs Confirm per AGENT_FLOW. If proactive: move all to Auto table. If always-confirm: move all to Confirm table. |
+| `{{HOOKS_SUMMARY}}` | List hooks per LANGUAGES. Describe what they do, not which specific tool (e.g., "auto-format and lint" not "ruff format"). |
 | `{{THINK_BEFORE_CODING_EXTRA}}` | passive: "Take initiative." / verbose: "Be extremely concise." / aggressive: "Make minimal changes." / workflow: nothing |
 | `{{SIMPLICITY_EXTRA}}` | aggressive: "When in doubt, change less." / others: nothing |
 
@@ -135,7 +135,7 @@ For each language in `LANGUAGES`:
 1. Read `templates/hooks/<lang>.json` from THIS repo.
 2. Read existing `~/.claude/settings.json` (or start with `{}`).
 3. Merge `PostToolUse` entries. **Dedup by `description` field** — skip if same description exists.
-4. **If ECC is in `enabledPlugins`, skip TypeScript hooks** — ECC provides Prettier, tsc, console.log via its own hooks.json.
+4. Check if any enabled plugins already provide equivalent hooks (e.g., `everything-claude-code` provides TypeScript hooks). Skip hooks that would duplicate plugin-provided ones.
 5. **Remove duplicates** found during scan (actively clean, not just skip adding new ones).
 6. Preserve all other settings keys (`enabledPlugins`, etc.).
 7. Write back. Then read it back and validate it's valid JSON.

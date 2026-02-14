@@ -16,8 +16,8 @@ The codebase is the source of truth. Documentation exists to make the code navig
 This applies to: CLAUDE.md files, `docs/` directories, rules files, and any config referenced in documentation.
 
 <!-- {{DOC_UPDATER_ENFORCEMENT}}
-  - auto: "**Enforcement:** After any task that modifies structure or conventions, run the `doc-updater` agent to verify docs match reality. This is not optional for structural changes."
-  - manual: "**Enforcement:** Run the `doc-updater` agent when you think docs need updating."
+  - auto: "**Enforcement:** After any task that modifies structure or conventions, verify docs match reality. This is not optional for structural changes."
+  - manual: "**Enforcement:** After structural changes, check whether docs need updating."
 -->
 {{DOC_UPDATER_ENFORCEMENT}}
 
@@ -35,10 +35,10 @@ This applies to: CLAUDE.md files, `docs/` directories, rules files, and any conf
 {{LIFECYCLE_SKIP_CLAUSE}}
 
 ```
-1. PLAN     → Propose which agents to use and the approach. Wait for approval.
+1. PLAN     → Propose your approach and what parallel work is possible. Wait for approval.
 2. IMPLEMENT → Execute the plan. Use TDD when adding behavior.
-3. REVIEW    → Auto-run code-reviewer (always) and security-reviewer (when touching auth, input handling, APIs, secrets).
-4. DOCUMENT  → Auto-run doc-updater if the task changed architecture, build commands, conventions, or file structure.
+3. REVIEW    → Auto-review code for quality and bugs. Check security only when touching auth, APIs, input handling, or secrets.
+4. DOCUMENT  → If the task changed architecture, build commands, conventions, or file structure, update docs in the same changeset.
 ```
 
 <!-- {{LIFECYCLE_GATE}}
@@ -48,15 +48,46 @@ This applies to: CLAUDE.md files, `docs/` directories, rules files, and any conf
 -->
 {{LIFECYCLE_GATE}}
 
-### Working Docs (Parallel Agent Coordination)
+### Post-Work Behaviors
 
-When multiple agents work in parallel, they need a shared scratchpad. Use `docs/working-docs/` for this.
+<!-- {{POST_WORK_BEHAVIORS}}
+  Adjust based on AGENT_FLOW and POST_WORK_AGENTS:
+  - proactive: All behaviors are "Auto — runs without asking"
+  - confirm-first: Auto table uses defaults below, Confirm table uses defaults below
+  - always-confirm: All behaviors require confirmation
+
+  Default (confirm-first):
+-->
+
+These happen automatically after implementation — no need to ask:
+
+| Behavior | When | How |
+|----------|------|-----|
+| **Code review** | After any code changes | Review for quality, bugs, style. Flag issues by severity. |
+| **Security check** | Only when touching auth, APIs, secrets, credentials, input handling | Check for injection, leaked secrets, missing validation. |
+| **Doc update** | After structural or convention changes | Update CLAUDE.md, docs/, and any config docs that reference changed code. |
+| **Dead code cleanup** | After refactoring | Remove unused imports, variables, and functions that the refactor orphaned. |
+| **Build fix** | When build fails | Analyze errors and fix incrementally. |
+
+These require confirmation before starting:
+
+| Behavior | When |
+|----------|------|
+| **Planning** | Non-trivial features, multi-file changes, architectural decisions |
+| **TDD** | New features, bug fixes that change behavior |
+| **E2E testing** | Critical user flows |
+
+**Use specialized agents when available** (e.g., via [everything-claude-code](https://github.com/affaan-m/everything-claude-code)). When agents are independent, launch them in parallel.
+
+### Working Docs (Parallel Coordination)
+
+When parallel work is happening, use `docs/working-docs/` as a shared scratchpad.
 
 **Convention:**
-- File naming: `{topic}-{type}.md` (e.g., `auth-research.md`, `api-design-decisions.md`, `caching-plan.md`)
+- File naming: `{topic}-{type}.md` (e.g., `auth-research.md`, `api-design-decisions.md`)
 - Types: `research`, `decisions`, `plan`, `findings`, `analysis`
-- Agents WRITE their findings here so other agents can READ them
-- Before starting work, agents should check `docs/working-docs/` for relevant context from sibling agents
+- Write findings here so parallel work can read them
+- Before starting work, check `docs/working-docs/` for relevant context
 
 <!-- {{WORKING_DOCS_LIFECYCLE}}
   - ephemeral: "**Lifecycle:** Delete all working docs after task completion."
@@ -65,34 +96,19 @@ When multiple agents work in parallel, they need a shared scratchpad. Use `docs/
 -->
 {{WORKING_DOCS_LIFECYCLE}}
 
-### Agent Usage
-
-<!-- {{AGENT_TABLE}}
-  - If ECC detected: Use full agent table with source noted as "everything-claude-code plugin".
-  - If ECC not detected: Add note "Agents listed below are available when the everything-claude-code plugin is installed."
-  - Adjust Auto/Confirm column based on AGENT_FLOW:
-    - proactive: All agents set to "Auto"
-    - confirm-first: Use the defaults shown below
-    - always-confirm: All agents set to "Confirm"
--->
-{{AGENT_TABLE}}
-
-**Parallel execution:** When agents are independent (e.g., security review + code review), launch them in parallel. Never run sequentially what can run concurrently.
-
 ### Hooks
 
-PostToolUse hooks are active and will run automatically:
+PostToolUse hooks run automatically on every file edit. Don't fight them — if a hook reformats your code, don't undo it.
+
 <!-- {{HOOKS_SUMMARY}}
-  - List active hooks per detected language
-  - Note source: "(via ECC plugin)" or "(via settings.json)"
+  - List active hooks per detected language. Only list languages that have hooks configured.
+  - Do NOT hardcode specific tool names. Describe what the hooks do.
   - Example:
-    - **TypeScript/JS:** Prettier formatting, `tsc` type checking, `console.log` warnings (via ECC plugin)
-    - **Python:** `ruff format` + `ruff check --fix`, `print()` warnings (via settings.json)
-    - **Go:** `goimports` formatting, `go vet` static analysis (via settings.json)
+    - **Python:** Auto-format and lint on save, print() warnings
+    - **Go:** Auto-format with import management, static analysis
+    - **TypeScript/JS:** Auto-format, type checking, console.log warnings
 -->
 {{HOOKS_SUMMARY}}
-
-Don't fight the hooks. If a hook reformats your code, don't undo it.
 
 ---
 
