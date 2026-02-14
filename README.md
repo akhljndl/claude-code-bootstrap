@@ -1,68 +1,80 @@
 # claude-code-bootstrap
 
-A Claude-driven bootstrap for your Claude Code setup. Clone it, open Claude Code, say **"bootstrap me"**, and Claude interviews you then generates your personalized configuration.
+Most people install Claude Code and start prompting immediately. It works — but Claude doesn't know how you think, what your workflow looks like, or what it should do without being told.
 
-## Quick Start
+`~/.claude/CLAUDE.md` is the most underused file in your setup. It's where you teach Claude how you work — once — and it remembers across every project, every session. But nobody writes one from scratch because it's not obvious what to put in it.
+
+This repo fixes that. Clone it, open Claude Code, say **"bootstrap me"**.
 
 ```bash
 git clone https://github.com/akhljndl/claude-code-bootstrap.git
 cd claude-code-bootstrap
 claude
-# Then say: "bootstrap me"
 ```
 
-## What You Get
+Claude asks you ~8 questions about how you work, then generates a `~/.claude/CLAUDE.md` tuned to your answers — plus hooks and tooling to back it up.
 
-1. **`~/.claude/CLAUDE.md`** — A personalized global instructions file tuned to your workflow preferences (agent behavior, task lifecycle strictness, pain point adjustments).
+## What it configures
 
-2. **PostToolUse hooks** in `~/.claude/settings.json` — Auto-formatting and lint checks that run after every edit:
-   - **Python:** `ruff format` + `ruff check --fix`, `print()` warnings
-   - **Go:** `goimports` formatting, `go vet` static analysis
-   - **TypeScript:** Prettier formatting, `tsc` type checking, `console.log` warnings (skipped if ECC plugin provides them)
+**How Claude approaches tasks:**
+- Should it plan before coding, or just go? How strict is the lifecycle?
+- Should it auto-run code review after changes, or ask first?
+- Should it keep docs in sync with code automatically?
 
-3. **Missing tool installation** — Detects and offers to install: `ruff`, `mypy`, `goimports`, `staticcheck`, `prettier`, `typescript`.
+**How Claude talks to you:**
+- Too verbose? It'll be concise. Too passive? It'll take initiative.
+- Should it propose agents (planner, reviewer, architect) or just launch them?
 
-## The Interview
+**How parallel work stays coordinated:**
+- When multiple agents run simultaneously, they share findings via `docs/working-docs/`
+- You choose whether those docs stick around or get cleaned up
+
+**What runs automatically on every edit:**
+- Auto-formatting and linting hooks for your languages (Python, Go, TypeScript)
+- Installs any missing tools the hooks need
+
+## The interview
 
 | # | Question | Default |
 |---|----------|---------|
 | 0 | Quick start or full interview? | — |
-| 1 | Agent behavior: proactive / confirm-first / always-confirm | confirm-first |
-| 2 | Working docs cleanup: ephemeral / persistent / selective | selective |
-| 3 | Primary languages (multi-select) | auto-detected |
-| 4 | Pain points: too passive / too verbose / missing workflow / too aggressive | missing workflow |
-| 5 | Post-work reviews: auto-run / confirm | auto-run |
-| 6 | Doc-updater: auto / manual | auto |
-| 7 | Project types: fullstack / CLI / data-ML / mix | mix |
-| 8 | Task lifecycle: strict / guidelines / loose | guidelines |
+| 1 | How autonomous should agents be? | Propose first, then run |
+| 2 | How to handle parallel agent working docs? | Keep decisions, delete scratch |
+| 3 | What languages do you use? | Auto-detected |
+| 4 | Biggest pain point with AI assistants? | Missing workflow |
+| 5 | Auto-run code reviews after changes? | Yes |
+| 6 | Auto-update docs after structural changes? | Yes |
+| 7 | What do you build? | Mix of everything |
+| 8 | How strict is PLAN → IMPLEMENT → REVIEW → DOCUMENT? | Follow by default, skip for simple tasks |
 
-Say **"quick start"** to skip the interview and accept all defaults.
+**Quick start** accepts all defaults — you get a working setup in under a minute.
+
+## Existing setup?
+
+If you already have a `~/.claude/` config, the bootstrap scans it first:
+- Detects your languages from installed hooks and rules
+- Finds broken hooks (referencing tools that aren't installed)
+- Spots duplicates (plugin hooks overlapping with your hooks)
+- Fixes what it finds, asks before changing anything
+
+Safe to re-run. It detects previous bootstraps and offers to refresh or just health-check.
+
+## Works with
+
+- **[everything-claude-code](https://github.com/affaan-m/everything-claude-code)** — detected automatically, no duplicate work. Not required.
+- **Any Claude Code setup** — greenfield or existing.
 
 ## Philosophy
 
-- **Opinionated defaults, fully overridable.** The defaults reflect a workflow that emphasizes structure without ceremony. Every choice can be changed.
-- **Claude IS the script.** No shell scripts, no installers. The `CLAUDE.md` in this repo instructs Claude Code to run the entire bootstrap interactively.
-- **Non-destructive.** Re-running is safe. Existing hooks are merged (deduped by description). Existing settings are preserved. A marker in the generated CLAUDE.md enables re-run detection.
+The defaults are opinionated. They come from a workflow that actually works in practice:
 
-## Works With ECC
+- **Code is law** — when code changes, docs update in the same commit
+- **Surgical changes** — change what was asked, nothing more
+- **Simplicity first** — no abstractions for single-use code
+- **Goal-driven** — every task starts with "what does done look like?"
+- **Parallel by default** — independent agents run concurrently, not sequentially
 
-This bootstrap works alongside the [everything-claude-code](https://github.com/anthropics/everything-claude-code) plugin but doesn't require it.
-
-- **ECC installed:** TypeScript hooks are skipped (ECC provides them). Agent table references ECC agents directly.
-- **ECC not installed:** All hooks are generated. Agent table notes that agents are available if ECC is installed later.
-
-## Re-Running
-
-Safe to re-run at any time. The bootstrap detects the `<!-- Generated by claude-code-bootstrap -->` marker and offers:
-- **Start fresh** — regenerate everything
-- **Update sections** — re-run interview for specific parts
-- **Just check tools** — verify tool installations only
-
-## What's NOT in Scope (v1)
-
-- **Rules files** — Let ECC or other plugins handle language-specific rules.
-- **Per-project CLAUDE.md** — This generates the global `~/.claude/CLAUDE.md` only.
-- **Shell scripts** — Claude is the automation layer.
+All overridable during the interview.
 
 ## License
 
